@@ -6,6 +6,9 @@ class ScriptInterpreter:
         self.variables = {}
 
     def evaluate_expression(self, expression):
+        if expression[0:5] == 'print':
+            print(expression[5:])
+
         tokens = re.findall(r'\d+|\+|\-|\*|\/|\(|\)|[a-zA-Z_]\w*|==|!=|<=|>=|<|>|and|or|not', expression)
         operator_stack = []
         operand_stack = []
@@ -26,6 +29,8 @@ class ScriptInterpreter:
                 while operator_stack[-1] != '(':
                     self.apply_operation(operator_stack.pop(), operand_stack)
                 operator_stack.pop()
+            elif token not in self.variables and not token.isdigit():
+                self.variables[token] = self.evaluate_expression(tokens[1])
             else:
                 print(f"var {token} is not defined")
                 break
@@ -84,6 +89,8 @@ class ScriptInterpreter:
 
     def interpret(self, code):
         lines = code.split('\n')
+        new_commands = []
+        expr_if=[]
         output = []
         try:
             if_num = 0
@@ -97,12 +104,26 @@ class ScriptInterpreter:
                         print("Can't support more than 3 nested IF statements")
                         return None
                     elif if_num == 1:
-                        condition = parts[0][3:].strip()  # grabbing the condition
-                        expr_if = parts[1]
-                        if 'print' in expr_if:
-                            exec(expr_if)
+                        condition = parts[0][3:].strip()# grabbing the condition
+                        if self.evaluate_expression(condition):
+                            new_parts = parts[len(parts)-2].split(' ')
+                            for part in new_parts:
+                                self.interpret(part)
+                        if len(parts) > 2:
+                            expr_if = parts[1:]
+
+                            for expr in expr_if and expr_if:
+                                if ' ' in expr:
+                                    new_commands = new_commands+expr.split(' ')
+                                else:
+                                    new_commands.append(expr)
+                            for command in new_commands:
+                                self.interpret(command)
+
                         else:
-                            return expr_if
+                            expr_if = parts[1]
+                            self.interpret(expr_if)
+
                     else:  # 2 to 3 conditions
                         for index in range(if_num):
                             current_condition = parts[index][3:].strip()
@@ -134,18 +155,18 @@ class ScriptInterpreter:
                     else:
                         return None
                 elif 'AND' in line:
-                    seperated_line = line.split(' AND ')
-                    for item in seperated_line:
+                    separated_line = line.split(' AND ')
+                    for item in separated_line:
                         item.strip()
-                    for item in seperated_line:
+                    for item in separated_line:
                         if not self.interpret(item):
                             return False
                     return True
                 elif 'OR' in line:
-                    seperated_line = line.split('OR')
-                    for item in seperated_line:
+                    separated_line = line.split('OR')
+                    for item in separated_line:
                         item.strip()
-                    for item in seperated_line:
+                    for item in separated_line:
                         if self.interpret(item):
                             return True
                     return False
@@ -198,26 +219,26 @@ class ScriptInterpreter:
                         print("can't evaluate this expression")
 
                 elif '>' in line:
-                    seperated_line = line.split('>')
-                    if seperated_line[0] in self.variables:
-                        res = self.variables[seperated_line[0]] > self.evaluate_expression(seperated_line[1])
+                    separated_line = line.split('>')
+                    if separated_line[0] in self.variables:
+                        res = self.variables[separated_line[0]] > self.evaluate_expression(separated_line[1])
                         if res:
                             return res
-                    elif seperated_line[0].isdigit() and seperated_line[1] in self.variables:
-                        res = self.evaluate_expression(seperated_line[0]) > self.variables[seperated_line[1]]
+                    elif separated_line[0].isdigit() and separated_line[1] in self.variables:
+                        res = self.evaluate_expression(separated_line[0]) > self.variables[separated_line[1]]
                         if res:
                             return res
                     else:
-                        res = self.evaluate_expression(seperated_line[0]) > self.evaluate_expression(seperated_line[1])
+                        res = self.evaluate_expression(separated_line[0]) > self.evaluate_expression(separated_line[1])
                         if res:
                             return res
 
 
 
                 elif '<' in line:
-                    seperated_line = line.split('<')
-                    if seperated_line[0] in self.variables:
-                         res = self.variables[seperated_line[0]] < self.evaluate_expression(seperated_line[1])
+                    separated_line = line.split('<')
+                    if separated_line[0] in self.variables:
+                         res = self.variables[separated_line[0]] < self.evaluate_expression(separated_line[1])
                          if res:
                              return res
                     elif seperated_line[0].isdigit() and seperated_line[1] in self.variables:
@@ -239,16 +260,28 @@ class ScriptInterpreter:
 
 
 if __name__ == "__main__":
+    input_user = []
     interpreter = ScriptInterpreter()
     try:
+
         while True:
-            code = input(">> ")
-            if code == "exit":
-                break
-            if len(code) > 1000:
-                print("can't process code long than 1000 words")
+            i = 0
+            answer = input("Hi, Do u want to enter more than 1 line of code ? (yes/no)\n")
+            if answer.lower() == 'yes':
+                while True:
+                    i += 1
+                    input_line = input("enter here line "+str(i)+" below: (type done to end)\n")
+                    if input_line.lower() == 'done':
+                        break
+                    input_user.append(input_line)
+                for line in input_user:
+                    interpreter.interpret(line)
+
             else:
 
+                code = input(">> ")
+                if code == "exit":
+                    break
                 output = interpreter.interpret(code)
                 if output is not None:
                     print(output)

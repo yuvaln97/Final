@@ -7,7 +7,7 @@ class ScriptInterpreter:
 
     def evaluate_expression(self, expression):
         if expression[0:5] == 'print':
-            print(expression[5:])
+            print(expression[5:].replace('(', '').replace(')', ''))
 
         tokens = re.findall(r'\d+|\+|\-|\*|\/|\(|\)|[a-zA-Z_]\w*|==|!=|<=|>=|<|>|and|or|not', expression)
         operator_stack = []

@@ -107,8 +107,12 @@ class ScriptInterpreter:
                         condition = parts[0][3:].strip()# grabbing the condition
                         if self.evaluate_expression(condition):
                             new_parts = parts[len(parts)-2].split(' ')
-                            for part in new_parts:
-                                self.interpret(part)
+                            if ' ' not in new_parts:
+                                self.evaluate_expression(new_parts)
+                            else:
+
+                                for part in new_parts:
+                                    self.interpret(part)
                         if len(parts) > 2:
                             expr_if = parts[1:]
 

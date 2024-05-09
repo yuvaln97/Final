@@ -113,6 +113,14 @@ class ScriptInterpreter:
 
                                 for part in new_parts:
                                     self.interpret(part)
+                        else:
+                            new_parts = parts[len(parts) - 1].split(' ')
+                            if ' ' not in new_parts:
+                                self.evaluate_expression(new_parts)
+                            else:
+
+                                for part in new_parts:
+                                    self.interpret(part)
                         if len(parts) > 2:
                             expr_if = parts[1:]
 

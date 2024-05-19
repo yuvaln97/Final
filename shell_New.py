@@ -104,11 +104,11 @@ class ScriptInterpreter:
                         print("Can't support more than 3 nested IF statements")
                         return None
                     elif if_num == 1:
-                        condition = parts[0][3:].strip()# grabbing the condition
+                        condition = parts[0][3:].strip()     # grabbing the condition
                         if self.evaluate_expression(condition):
                             new_parts = parts[len(parts)-2].split(' ')
                             if ' ' not in new_parts:
-                                self.evaluate_expression(new_parts)
+                                self.evaluate_expression(new_parts[0])
                             else:
 
                                 for part in new_parts:
@@ -116,13 +116,13 @@ class ScriptInterpreter:
                         else:
                             new_parts = parts[len(parts) - 1].split(' ')
                             if ' ' not in new_parts:
-                                self.evaluate_expression(new_parts)
+                                self.evaluate_expression(new_parts[1])
                             else:
 
                                 for part in new_parts:
                                     self.interpret(part)
-                        if len(parts) > 2:
-                            expr_if = parts[1:]
+                        if len(new_parts) > 2:
+                            expr_if = new_parts[1:]
 
                             for expr in expr_if and expr_if:
                                 if ' ' in expr:
